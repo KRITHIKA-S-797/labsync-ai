@@ -1,0 +1,6 @@
+Create a lab record with:
+Aim
+Algorithm
+Program
+Sample Output
+Conclusion
