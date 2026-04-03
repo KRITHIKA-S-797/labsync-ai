@@ -1,0 +1,17 @@
+spec_version: "0.1.0"
+name: labsync-ai-agent
+version: 0.1.0
+description: "AI agent for code analysis, lab record generation, and smart planning"
+
+model:
+  preferred: claude-sonnet-4-5-20250929
+
+skills:
+  - code-analysis
+  - lab-generator
+  - planner
+
+tags:
+  - hackathon
+  - student
+  - productivity

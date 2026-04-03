@@ -1,203 +1,92 @@
 import streamlit as st
+import ollama
 
-st.title("LabSync AI Agent")
+# ================= PAGE CONFIG =================
+st.set_page_config(page_title="LabSync AI", layout="wide")
 
-# Inputs
-user_input = st.text_area("Paste your code here")
-plan_input = st.text_area("Enter your project idea / plan")
+st.title("🚀 LabSync AI Agent")
 
-if st.button("Generate"):
+# ================= STREAM FUNCTION =================
+def stream_ai(prompt):
+    response = ollama.chat(
+        model="phi3",  # ⚡ faster model
+        messages=[{"role": "user", "content": prompt}],
+        stream=True
+    )
 
-    # ================= IDEA GENERATOR =================
-    if plan_input:
-        plan = plan_input.lower()
+    output = ""
+    placeholder = st.empty()
 
-        if "student" in plan:
-            ideas = [
-                "Add login system",
-                "Track student progress",
-                "Include reminders",
-                "Add performance dashboard"
-            ]
-        elif "app" in plan:
-            ideas = [
-                "Improve UI/UX",
-                "Add authentication",
-                "Optimize performance",
-                "Add notifications"
-            ]
-        elif "ai" in plan:
-            ideas = [
-                "Use ML models",
-                "Improve accuracy",
-                "Add real-time predictions",
-                "Smart recommendations"
-            ]
-        else:
-            ideas = [
-                "Define clear problem",
-                "Add unique feature",
-                "Improve usability",
-                "Focus on user experience"
-            ]
-    else:
-        ideas = ["No plan provided"]
+    for chunk in response:
+        content = chunk['message']['content']
+        output += content
+        placeholder.markdown(output)
 
-    # ================= SMART TIME PLANNER =================
-    if plan_input:
-        if "ai" in plan:
-            schedule = [
-                "Research AI concepts → 1 hour",
-                "Plan model logic → 1 hour",
-                "Implement core functionality → 2 hours",
-                "Test and debug → 1 hour",
-                "Optimize and improve → 1 hour"
-            ]
-        elif "app" in plan:
-            schedule = [
-                "Define app features → 1 hour",
-                "Design UI layout → 1 hour",
-                "Develop main functionality → 2 hours",
-                "Test application → 1 hour",
-                "Improve UI/UX → 1 hour"
-            ]
-        elif "student" in plan:
-            schedule = [
-                "Understand requirements → 1 hour",
-                "Plan structure → 1 hour",
-                "Develop modules → 2 hours",
-                "Test functionality → 1 hour",
-                "Final review → 1 hour"
-            ]
-        else:
-            schedule = [
-                "Understand problem → 30 minutes",
-                "Plan solution → 1 hour",
-                "Implement code → 2 hours",
-                "Test output → 30 minutes",
-                "Improve logic → 1 hour"
-            ]
-    else:
-        schedule = ["No plan provided"]
+    return output
 
-    # ================= LANGUAGE DETECTION =================
-    if "print" in user_input and "def" not in user_input:
-        lang = "Python"
-    elif "class" in user_input:
-        lang = "Java"
-    else:
-        lang = "Programming"
+# ================= TABS =================
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    ["📘 Notes", "🧠 Planner", "💻 Code Analyzer", "⚙️ Code Generator", "💬 Chat"]
+)
 
-    # ================= ALGORITHM DETECTION =================
-    if "if" in user_input:
-        algorithm = [
-            "Start",
-            "Check condition",
-            "Execute if block",
-            "Stop"
-        ]
-    elif "for" in user_input or "while" in user_input:
-        algorithm = [
-            "Start",
-            "Initialize loop",
-            "Check condition",
-            "Execute loop body",
-            "Repeat until condition fails",
-            "Stop"
-        ]
-    elif "print" in user_input:
-        algorithm = [
-            "Start",
-            "Write print statement",
-            "Execute program",
-            "Display output",
-            "Stop"
-        ]
-    else:
-        algorithm = [
-            "Start",
-            "Write program logic",
-            "Execute program",
-            "Display result",
-            "Stop"
-        ]
+# ================= TAB 1: NOTES =================
+with tab1:
+    topic = st.text_input("Enter Topic")
 
-    # ================= ERROR DETECTION =================
-    if "if" in user_input and ":" not in user_input:
-        error_msg = "⚠️ Syntax error detected: Missing ':' in if statement."
-    else:
-        error_msg = "✅ No major syntax errors detected."
+    if topic:
+        col1, col2, col3, col4 = st.columns(4)
 
-    # ================= RESULT & CONCLUSION =================
-    if "⚠️" in error_msg:
-        result = "The program contains errors and did not execute successfully."
-        conclusion = f"The {lang} program needs correction before successful execution."
-    else:
-        result = "The program was successfully executed and expected output was obtained."
-        conclusion = f"The given problem is successfully implemented using {lang}."
+        if col1.button("Notes"):
+            st.subheader("📘 Notes")
+            stream_ai(f"Explain {topic} with definition, parts, working, and applications.")
+            st.code("Start → Input → Process → Output → End")
 
-    # ================= OUTPUT =================
+        if col2.button("Article"):
+            st.subheader("📰 Article")
+            stream_ai(f"Write a detailed article on {topic}.")
 
-    # Idea Suggestions
-    st.subheader("Project Idea Suggestions")
-    for idea in ideas:
-        st.write("• " + idea)
+        if col3.button("Essay"):
+            st.subheader("📝 Essay")
+            stream_ai(f"Write an academic essay on {topic} with introduction, body, and conclusion.")
 
-    # Time Planner
-    st.subheader("Smart TODO Planner (Time-based)")
-    for task in schedule:
-        st.write("• " + task)
+        if col4.button("Summary"):
+            st.subheader("📄 Summary")
+            stream_ai(f"Give a short bullet-point summary of {topic}.")
 
-    # Code Explanation
-    st.subheader("Code Explanation")
-    st.write(f"This is a {lang} program demonstrating basic logic and execution flow.")
+# ================= TAB 2: PLANNER =================
+with tab2:
+    plan = st.text_area("Enter your project / idea")
 
-    # Error Detection
-    st.subheader("Error Detection")
-    st.write(error_msg)
+    if st.button("Generate Plan"):
+        if plan:
+            st.subheader("🕒 Smart Plan")
+            stream_ai(f"Create a step-by-step hourly plan for {plan}.")
+            st.code("Idea → Research → Design → Develop → Test → Improve")
 
-    # Lab Record
-    st.subheader("Lab Record")
-    st.write("**Aim:** To write and execute a program.")
-    st.write(f"**Objective:** To understand logic using {lang}.")
+# ================= TAB 3: CODE ANALYZER =================
+with tab3:
+    code = st.text_area("Paste your code")
 
-    st.write("**Algorithm:**")
-    for step in algorithm:
-        st.write("• " + step)
+    if st.button("Analyze Code"):
+        if code:
+            st.subheader("💻 Code Analysis")
+            stream_ai(f"Analyze this code:\n{code}\nExplain errors and fixes.")
 
-    st.write("**Program:**")
-    st.code(user_input)
+# ================= TAB 4: CODE GENERATOR =================
+with tab4:
+    code_topic = st.text_input("Enter topic for code")
+    lang = st.selectbox("Language", ["Python", "Java", "C++"])
 
-    st.write("**Explanation:**")
-    st.write(f"This program demonstrates key {lang} concepts.")
+    if st.button("Generate Code"):
+        if code_topic:
+            st.subheader("💻 Generated Code")
+            stream_ai(f"Generate a {lang} program for {code_topic} with comments.")
 
-    st.write("**Result:**")
-    st.write(result)
+# ================= TAB 5: CHAT =================
+with tab5:
+    user_msg = st.text_input("Ask anything")
 
-    st.write("**Conclusion:**")
-    st.write(conclusion)
-
-    st.write("**Viva Questions:**")
-    st.write("• What is the purpose of this program?")
-    st.write("• What concepts are used?")
-    st.write("• How can it be improved?")
-
-    # TODO Suggestions
-    st.subheader("TODO Suggestions")
-    todos = [
-        "Fix syntax errors",
-        "Improve readability",
-        "Add comments",
-        "Optimize logic"
-    ]
-    for t in todos:
-        st.write("• " + t)
-
-    # Resume Output
-    st.subheader("Resume Output")
-    resume = [
-        f"Developed a {lang} based application",
-        "Improved problem-solving and debugging skills"
-    ]
-    for r in resume:
-        st.write("• " + r)
+    if st.button("Send"):
+        if user_msg:
+            st.subheader("💬 AI Response")
+            stream_ai(f"Answer clearly: {user_msg}")
